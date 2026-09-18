@@ -1,4 +1,4 @@
-/** Error types the client throws. Ported from jsjiit, whose names the jportal app already catches by. */
+/** Error types the client throws. Ported from jsjiit, whose names the JP WebPortal app already catches by. */
 
 export class APIError extends Error {
   constructor(message) {

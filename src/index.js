@@ -1,8 +1,8 @@
 /**
  * jiit-api - a client for JIIT's student web portal (the "CampusLynx" StudentPortalAPI backend).
  *
- * Extracted from the jportal app, and a from-scratch successor to `jsjiit` (MIT-era reverse engineering by
- * codeblech, whose endpoint map and crypto scheme this is built on): same method names and return shapes,
+ * Extracted from the JP WebPortal app, and a from-scratch successor to `jsjiit` (ISC-licensed reverse
+ * engineering by codeblech, whose endpoint map and crypto scheme this is built on): same method names and return shapes,
  * plus the Google sign-in flow the portal switched students to in Sep 2026, serializable sessions, and no
  * dependence on a DOM.
  *

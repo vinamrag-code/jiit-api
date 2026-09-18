@@ -1,6 +1,6 @@
 /**
  * Thin typed views over the portal's responses. Field names and `from_json` shapes are kept exactly as
- * jsjiit had them, because jportal's screens already destructure them (`registration_code`, `stynumber`,
+ * jsjiit had them, because JP WebPortal's screens already destructure them (`registration_code`, `stynumber`,
  * `latest_semester()`, ...). Every model keeps `raw_response` where it had one, since the portal returns
  * plenty of fields no model bothers to name.
  */
@@ -49,7 +49,7 @@ export class AttendanceHeader {
 /**
  * A registration period. The portal spells its two ids differently across endpoints (`registrationcode`
  * vs `registration_code` vs `registrationCode`), hence the fallbacks. `is_grade_card_complete` and
- * `grade_card_source` are jportal's own annotations, set by `get_semesters_for_grade_card`.
+ * `grade_card_source` are JP WebPortal's own annotations, set by `get_semesters_for_grade_card`.
  */
 export class Semester {
   constructor(registration_code, registration_id, extra = {}) {

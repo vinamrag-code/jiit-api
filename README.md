@@ -4,7 +4,7 @@ A JavaScript client for JIIT's student web portal (the "CampusLynx" `StudentPort
 grades, exam schedules, marks, registrations, fees and hostel details — including the **Google sign-in
 handoff** the portal switched students to in September 2026.
 
-Extracted from [jportal](../jportal) so the data layer stops being scattered across an app. Runs in browsers,
+Extracted from [JP WebPortal](../jportal) so the data layer stops being scattered across an app. Runs in browsers,
 in Capacitor/WebView apps, and in Node 18+.
 
 ## Install
