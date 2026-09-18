@@ -133,6 +133,7 @@ return shapes, plus Google sign-in, serializable sessions, no DOM dependency, an
 
 ## License
 
-MIT (see [LICENSE](LICENSE)), with jsjiit's ISC notice preserved for the portions derived from it.
+MIT (see [LICENSE](LICENSE)). jsjiit's ISC notice is preserved in [NOTICE](NOTICE) for the portions derived
+from it.
 
 Not affiliated with or endorsed by JIIT.
