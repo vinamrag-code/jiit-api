@@ -2,3 +2,7 @@ node_modules/
 dist/
 .DS_Store
 *.log
+
+# a captured session is a live credential - never commit one
+session.json
+*.session.json

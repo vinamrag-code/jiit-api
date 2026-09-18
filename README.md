@@ -123,6 +123,38 @@ to CORS, such as one backed by Capacitor's `CapacitorHttp`.
 Errors: `APIError`, `LoginError`, `AccountAPIError`, `SessionError`, `SessionExpired`, `NotLoggedIn`.
 A 401 really does arrive as `SessionExpired`, so callers can tell an expired session from a failed request.
 
+## Development
+
+```sh
+npm install
+npm test        # 46 unit tests, all against a fake fetch
+npm run lint
+```
+
+### Smoke test against the live portal
+
+The unit tests prove the library's own logic, but they never touch the network, and the endpoint payloads
+were ported by reading jsjiit's minified dist rather than by running it. This API also fails *quietly* — a
+wrong field name comes back as an empty or "Failure" response, not an error. So an endpoint isn't really
+known to work until it has been called for real:
+
+```sh
+# capture a session with the sign-in bookmarklet, then pass the redirect URL:
+npm run smoke -- --url "http://localhost:5173/#/import-session?token=…&memberid=…"
+
+npm run smoke -- --session session.json                 # or a saved session
+npm run smoke -- --url "…" --api-url http://localhost:5173/api/StudentPortalAPI
+npm run smoke -- --url "…" --marks                      # also download a marks PDF
+```
+
+It calls every read-only endpoint once and prints pass/fail per endpoint. Output shows response *shapes*
+(key names, array lengths) and never values, and tokens are redacted, so it's safe to paste into an issue —
+`--verbose` adds values, so don't share that. `change_password` and `fill_feedback_form` are never run:
+they change your account and submit real feedback.
+
+From Node the script uses `scripts/tlsFetch.mjs`, which caps TLS at 1.2 — see "Reaching the API" above for
+why Node's defaults fail. No proxy is needed from Node, since nothing sends an `Origin` header.
+
 ## Credits
 
 Built on the reverse engineering in [**jsjiit**](https://github.com/codeblech/jsjiit) and
