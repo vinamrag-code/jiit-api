@@ -8,14 +8,29 @@
     ".": "./src/index.js",
     "./bookmarklet": "./src/bookmarklet.js"
   },
-  "files": ["src", "README.md", "LICENSE"],
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "keywords": ["jiit", "webportal", "campuslynx", "attendance", "jsjiit"],
-  "license": "WTFPL",
+  "keywords": [
+    "jiit",
+    "webportal",
+    "campuslynx",
+    "attendance",
+    "jsjiit"
+  ],
+  "license": "MIT",
   "devDependencies": {
     "vitest": "^2.1.9"
+  },
+  "author": "Vinamra Agrawal",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vinamrag-code/jiit-api.git"
   }
 }

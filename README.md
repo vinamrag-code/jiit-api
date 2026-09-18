@@ -12,7 +12,7 @@ in Capacitor/WebView apps, and in Node 18+.
 ```sh
 npm install jiit-api        # once published
 # or, for now, from the repo:
-npm install github:<you>/jiit-api
+npm install github:vinamrag-code/jiit-api
 ```
 
 ## Quick start
@@ -130,5 +130,9 @@ Built on the reverse engineering in [**jsjiit**](https://github.com/codeblech/js
 `LocalName` header scheme are theirs. This is a from-scratch rewrite rather than a fork: same method names and
 return shapes, plus Google sign-in, serializable sessions, no DOM dependency, and a 401 that survives as
 `SessionExpired`.
+
+## License
+
+MIT (see [LICENSE](LICENSE)), with jsjiit's ISC notice preserved for the portions derived from it.
 
 Not affiliated with or endorsed by JIIT.
