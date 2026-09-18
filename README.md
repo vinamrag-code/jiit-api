@@ -79,6 +79,13 @@ must do, both verified against the live server (18 Sep 2026) and both easy to lo
   established`, surfacing as empty-bodied 500s. Measured: 0/3 succeeded on Node defaults, 3/3 capped. curl
   and browsers land on 1.2 anyway, which is why curl never reproduces it.
 
+And one that bites any non-browser client, proxy or not:
+
+- **Send a `User-Agent`.** A request without one is answered **401**, not 403 — so it looks exactly like a
+  rejected token and sends you hunting for an auth bug that isn't there. Verified with a known-good session:
+  no UA → 401, UA alone → 200, while `Origin` and `Referer` changed nothing either way. Browsers always
+  send one; Node's `http`/`https` does not. `scripts/tlsFetch.mjs` sets a default.
+
 A Vite dev proxy doing both:
 
 ```js
@@ -122,6 +129,21 @@ to CORS, such as one backed by Capacitor's `CapacitorHttp`.
 
 Errors: `APIError`, `LoginError`, `AccountAPIError`, `SessionError`, `SessionExpired`, `NotLoggedIn`.
 A 401 really does arrive as `SessionExpired`, so callers can tell an expired session from a failed request.
+
+**Verified against the live portal** on 18 Sep 2026 with a real student session: every read-only endpoint
+above returns real data (`npm run smoke` — 17 passed, 0 failed). Two endpoints answer with a business
+failure rather than data depending on the student — `get_hostel_details` ("You are not a Hosteller Student")
+and `get_fines_msc_charges` ("NO APPROVED REQUEST FOUND", i.e. nothing pending). `change_password` and
+`fill_feedback_form` are the only methods never exercised, since both change your account.
+
+Three payload details the live server insists on, each found by probing it and each failing in a way that
+does not point at the cause:
+
+| Endpoint | Requirement | What happens otherwise |
+|---|---|---|
+| `getstudentbankinfo` | body must be **encrypted**, not plain JSON | `500 java.lang.NullPointerException` (this is what jsjiit sends) |
+| `refreshTokenRequest` | `tokendate` must be **`dd/mm/yyyy`** | `500 java.lang.IllegalArgumentException` for ISO, epoch or `yyyy-mm-dd` |
+| `refreshTokenRequest` | success is `status.responseStatus` | `response.msg` is a human string ("Token Referesh at the time of Login differnce timing = …"), never `"Success"` |
 
 ## Development
 

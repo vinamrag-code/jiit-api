@@ -33,6 +33,13 @@ export const DEFAULT_API_URL = "https://webportal.jiit.ac.in:6011/StudentPortalA
 /** The captcha the portal's own login form ships hard-coded - it is not actually checked. */
 export const DEFAULT_CAPTCHA = { captcha: "phw5n", hidden: "gmBctEffdSg=" };
 
+/** `dd/mm/yyyy`, the only date format `refreshTokenRequest` accepts. */
+export function formatPortalDate(date) {
+  const d = date instanceof Date ? date : new Date(date);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
+
 export class WebPortal {
   /**
    * @param {object} [options]
@@ -140,6 +147,10 @@ export class WebPortal {
    * student from being sent back through sign-in on every launch. The portal's own frontend does the same
    * on a 401. A "Success" answer means the *existing* bearer token keeps working; no new token is issued,
    * so there is nothing to store beyond the refreshed `tokenDate`.
+   *
+   * `tokendate` must be `dd/mm/yyyy`. Anything else - an ISO string, an epoch, `yyyy-mm-dd` - gets a 500
+   * (`java.lang.IllegalArgumentException`) and the session is not extended. Verified against the live
+   * portal; only the `dd/mm/yyyy` forms answered Success.
    */
   async refresh_session() {
     const session = this._requireSession();
@@ -151,10 +162,12 @@ export class WebPortal {
           Authorization: `Bearer ${session.token}`,
           LocalName: await generateLocalName(),
         },
-        body: JSON.stringify({ username: session.username, tokendate: session.tokenDate }),
+        body: JSON.stringify({ username: session.username, tokendate: formatPortalDate(session.tokenDate) }),
       });
       const data = await res.json().catch(() => null);
-      if (data?.response?.msg !== "Success") return false;
+      // Success is signalled by the envelope's status, not by `response.msg` - that carries a human string
+      // like "Token Referesh at the time of Login differnce timing = ...", never the word "Success".
+      if (data?.status?.responseStatus !== "Success") return false;
       session.tokenDate = new Date().toISOString();
       return true;
     } catch {
@@ -171,10 +184,14 @@ export class WebPortal {
     return (await this.__hit("POST", "/studentpersinfo/getstudent-personalinformation", { json, authenticated: true })).response;
   }
 
+  /**
+   * Note the encrypted payload: this endpoint answers a *plain* JSON body with a 500
+   * (`java.lang.NullPointerException`), which is what jsjiit sends. Verified against the live portal.
+   */
   async get_student_bank_info() {
     const s = this._requireSession();
-    const json = { instituteid: s.instituteid, studentid: s.memberid };
-    return (await this.__hit("POST", "/studentbankdetails/getstudentbankinfo", { json, authenticated: true })).response;
+    const body = await serializePayload({ instituteid: s.instituteid, studentid: s.memberid });
+    return (await this.__hit("POST", "/studentbankdetails/getstudentbankinfo", { json: body, authenticated: true })).response;
   }
 
   async change_password(oldPassword, newPassword) {

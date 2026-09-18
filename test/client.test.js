@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { WebPortal } from "../src/client.js";
+import { WebPortal, formatPortalDate } from "../src/client.js";
 import { WebPortalSession } from "../src/session.js";
 import { APIError, NotLoggedIn, SessionExpired } from "../src/errors.js";
 
@@ -124,9 +124,20 @@ describe("token refresh", () => {
   });
 
   it("reports failure instead of throwing, so a caller can fall back to signing in again", async () => {
-    const { impl } = fakeFetch([{ body: { response: { msg: "Invalid" } } }]);
+    const { impl } = fakeFetch([{ status: 500, body: { exception: "java.lang.IllegalArgumentException" } }]);
     const w = new WebPortal({ fetch: impl, session: session() });
     await expect(w.refresh_session()).resolves.toBe(false);
+  });
+
+  it("reads success from the envelope status, not from response.msg", async () => {
+    // The live portal answers a good refresh with responseStatus "Success" while response.msg is a
+    // human-readable string ("Token Referesh at the time of Login differnce timing = ...").
+    const { impl } = fakeFetch([{ body: {
+      status: { responseStatus: "Success", errors: null },
+      response: { msg: "Token Referesh at the time of Login differnce timing = -6314hrs ,-38min ,-37sec ," },
+    } }]);
+    const w = new WebPortal({ fetch: impl, session: session() });
+    await expect(w.refresh_session()).resolves.toBe(true);
   });
 });
 
@@ -173,5 +184,37 @@ describe("endpoints", () => {
     const w = new WebPortal({ fetch: impl, session: session() });
     await w.get_personal_info();
     expect(JSON.parse(calls[0].options.body)).toHaveProperty("clinetid");
+  });
+});
+
+describe("payload formats the live portal insists on", () => {
+  // Each of these was found by probing the live server; getting them wrong fails quietly or with a 500.
+  it("sends an encrypted body to getstudentbankinfo, not plain JSON", async () => {
+    // A plain JSON body here returns 500 java.lang.NullPointerException. jsjiit sends plain JSON.
+    const { impl, calls } = fakeFetch([{ body: { response: { bankinfo: {} } } }]);
+    const w = new WebPortal({ fetch: impl, session: session() });
+    await w.get_student_bank_info();
+    const sent = JSON.parse(calls[0].options.body);
+    expect(typeof sent).toBe("string");
+    expect(sent).toMatch(/^[A-Za-z0-9+/]+={0,2}$/);
+  });
+
+  it("sends tokendate as dd/mm/yyyy on refresh, not ISO", async () => {
+    // ISO, epoch and yyyy-mm-dd all return 500 java.lang.IllegalArgumentException.
+    const { impl, calls } = fakeFetch([{ body: { response: { msg: "Success" } } }]);
+    const w = new WebPortal({ fetch: impl, session: session() });
+    await w.refresh_session();
+    expect(JSON.parse(calls[0].options.body).tokendate).toMatch(/^\d{2}\/\d{2}\/\d{4}$/);
+  });
+});
+
+describe("formatPortalDate", () => {
+  it("pads day and month to two digits", () => {
+    expect(formatPortalDate(new Date(2027, 0, 1))).toBe("01/01/2027");
+    expect(formatPortalDate(new Date(2026, 8, 18))).toBe("18/09/2026");
+  });
+
+  it("accepts an ISO string as well as a Date, since sessions persist tokenDate as ISO", () => {
+    expect(formatPortalDate(new Date(2026, 8, 18).toISOString())).toBe("18/09/2026");
   });
 });

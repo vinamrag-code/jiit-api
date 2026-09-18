@@ -16,7 +16,7 @@
  * // new WebPortal({ session: WebPortalSession.fromJSON(JSON.parse(...)) })
  * ```
  */
-export { WebPortal, DEFAULT_API_URL, DEFAULT_CAPTCHA } from "./client.js";
+export { WebPortal, DEFAULT_API_URL, DEFAULT_CAPTCHA, formatPortalDate } from "./client.js";
 export { WebPortalSession } from "./session.js";
 export { buildBookmarklet, bookmarkletScript, parseImportParams, PORTAL_ORIGIN, PORTAL_LOGIN_URL } from "./bookmarklet.js";
 export { generateLocalName, serializePayload, generateDateSeq } from "./crypto.js";

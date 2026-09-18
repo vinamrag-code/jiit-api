@@ -124,14 +124,7 @@ if (session.isExpiring(0)) {
   console.log("  \x1b[33mNote\x1b[0m the token is already past its expiry - refresh_session may or may not revive it.\n");
 }
 
-console.log("Session");
-await check("refresh_session", async () => {
-  const ok = await w.refresh_session();
-  if (!ok) throw new Error("the portal did not answer Success - the session may be dead");
-  return { refreshed: ok };
-});
-
-console.log("\nProfile");
+console.log("Profile");
 await check("get_personal_info", () => w.get_personal_info());
 await check("get_student_bank_info", () => w.get_student_bank_info());
 // Day scholars have no allocation, so a failure here is not necessarily a bug.
@@ -183,7 +176,18 @@ await check("get_sgpa_cgpa", () => w.get_sgpa_cgpa());
 
 console.log("\nFees");
 await check("get_fee_summary", () => w.get_fee_summary());
-await check("get_fines_msc_charges", () => w.get_fines_msc_charges());
+// "NO APPROVED REQUEST FOUND" just means nothing is pending, the same kind of business answer
+// as the hosteller check above.
+await check("get_fines_msc_charges", () => w.get_fines_msc_charges(), { tolerate: true });
+
+// Last, deliberately: this is the only call here that changes server-side state, so if it goes wrong it
+// must not be able to invalidate the session for everything above it.
+console.log("\nSession");
+await check("refresh_session", async () => {
+  const ok = await w.refresh_session();
+  if (!ok) throw new Error("the portal did not answer Success - the session may be dead");
+  return { refreshed: ok };
+});
 
 // ------------------------------------------------------------------- summary
 
